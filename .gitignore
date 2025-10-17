@@ -1,0 +1,81 @@
+# ----------------------------
+# Python
+# ----------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ----------------------------
+# Virtual environments
+# ----------------------------
+venv/
+env/
+.venv/
+ENV/
+.env/
+
+# ----------------------------
+# Jupyter notebooks
+# ----------------------------
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ----------------------------
+# Data & Models
+# ----------------------------
+data/
+datasets/
+models/
+checkpoints/
+outputs/
+*.h5
+*.hdf5
+*.pt
+*.pth
+*.pkl
+*.joblib
+*.npz
+
+# ----------------------------
+# Logs & temp files
+# ----------------------------
+logs/
+*.log
+*.out
+*.tmp
+*.bak
+*.swp
+
+# ----------------------------
+# System / IDE
+# ----------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.code-workspace
+
+# ----------------------------
+# Docker
+# ----------------------------
+*.pid
+*.seed
+*.pid.lock
+*.tar
+docker-compose.override.yml
+
+# ----------------------------
+# FastAPI / Uvicorn cache
+# ----------------------------
+*.sqlite3
+__pycache__/
+*.db
+
+# ----------------------------
+# Other
+# ----------------------------
+*.zip
+*.tar.gz
+*.rar
+*.7z
