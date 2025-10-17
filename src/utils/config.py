@@ -6,19 +6,33 @@ import torch
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List
+from src.models.my_model import MyModel
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ASSETS_PATH = BASE_DIR / "assets"
-MODEL_PATH = ASSETS_PATH / "model.pth"
+MODEL_PATH = ASSETS_PATH / "models.pth"
 LABELS_PATH = ASSETS_PATH / "labels.json"
 
 
+
+import builtins
+
+class MyModel(torch.nn.Module):
+    def __init__(self):
+        super(MyModel, self).__init__()
+
+    def forward(self, x):
+        return x
+
+builtins.MyModel = MyModel  
+# بعد كده تحميل الموديل
 if MODEL_PATH.exists():
     MODEL = torch.load(MODEL_PATH, map_location="cpu")
     MODEL.eval()
 else:
     MODEL = None
     print(f"⚠️ Warning: Model not found at {MODEL_PATH}")
+
 
 if LABELS_PATH.exists():
     with open(LABELS_PATH, "r", encoding="utf-8") as f:

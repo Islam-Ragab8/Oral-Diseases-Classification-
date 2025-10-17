@@ -7,14 +7,12 @@ from torchvision import transforms
 from PIL import Image
 from typing import List, Union
 
-from utils.config import MODEL, config
-from utils.schemas import PredictionResponse, PredictionsResponse
+from src.utils.config import MODEL, config
+from src.utils.schemas import PredictionResponse, PredictionsResponse
 
 
 def preprocess_image(image_path: str) -> torch.Tensor:
-    """
-    تجهيز الصورة قبل التنبؤ (Resize + ToTensor)
-    """
+    
     transform = transforms.Compose([
         transforms.Resize(config.model.image_size),
         transforms.ToTensor(),
@@ -24,10 +22,7 @@ def preprocess_image(image_path: str) -> torch.Tensor:
 
 
 def predict_images(image_paths: Union[str, List[str]]) -> PredictionsResponse:
-    """
-    يعمل inference على صورة واحدة أو أكتر
-    ويرجع النتائج في شكل PredictionsResponse
-    """
+    
     if MODEL is None:
         raise ValueError("❌ Model not loaded. Please check config.MODEL_PATH.")
 

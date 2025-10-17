@@ -1,8 +1,8 @@
 # app.py
 
 import streamlit as st
-from utils.inference import predict_images
-from utils.config import config
+from src.utils.inference import predict_images
+from src.utils.config import config
 from PIL import Image
 import tempfile
 import os
