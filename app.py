@@ -1,67 +1,65 @@
+# app.py
+
 import streamlit as st
-import torch
-import torch.nn.functional as F
-from torchvision import transforms
+from utils.inference import predict_images
+from utils.config import config
 from PIL import Image
-import json
+import tempfile
+import os
 
-# ==============================
-# 1) Load Model and Labels
-# ==============================
-MODEL_PATH = "C:\Users\7eGaZy CoMp\OneDrive\Desktop\Oral app\model.pth"         # Path to your trained model
-LABELS_PATH = "C:\Users\7eGaZy CoMp\OneDrive\Desktop\Oral app\labels.json"      # Path to your labels file
+# ---------- إعداد الصفحة ----------
+st.set_page_config(
+    page_title="🦷 Oral Diseases Classification",
+    page_icon="🦷",
+    layout="wide"
+)
 
-# Load label dictionary
-with open(LABELS_PATH, "r") as f:
-    idx_to_class = json.load(f)  # Mapping from class index to disease name
+st.title("🦷 Oral Diseases Classification App")
+st.write("ارفع صورة أو أكثر، والموديل هيحاول يتعرف على نوع المرض.")
 
-# Load the trained model
-model = torch.load(MODEL_PATH, map_location=torch.device('cpu'))
-model.eval()
+# ---------- رفع الصور ----------
+uploaded_files = st.file_uploader(
+    "اختار صورة أو أكثر:",
+    type=["jpg", "jpeg", "png"],
+    accept_multiple_files=True
+)
 
-# ==============================
-# 2) Define Image Transform
-# ==============================
-image_size = 224  # Should match the image size used during training
-transform = transforms.Compose([
-    transforms.Resize((image_size, image_size)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406],
-                         [0.229, 0.224, 0.225])
-])
+# ---------- عند رفع الصور ----------
+if uploaded_files:
+    st.info(f"📸 تم رفع {len(uploaded_files)} صورة.")
+    temp_paths = []
 
-# ==============================
-# 3) Streamlit UI
-# ==============================
-st.set_page_config(page_title="Oral Diseases Classifier", page_icon="🦷")
-st.title("🦷 Oral Diseases Classification")
-st.write("Upload an image of the affected area and the model will predict the disease 👇")
+    # حفظ الصور مؤقتًا
+    for file in uploaded_files:
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+        temp_file.write(file.read())
+        temp_paths.append(temp_file.name)
 
-# ==============================
-# 4) Upload Image
-# ==============================
-uploaded_file = st.file_uploader("📸 Upload Image", type=["jpg", "jpeg", "png"])
+    # ---------- تنفيذ التنبؤ ----------
+    try:
+        results = predict_images(temp_paths)
+        st.success("✅ تم تحليل الصور بنجاح!")
 
-if uploaded_file is not None:
-    # Show the image
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+        # ---------- عرض النتائج ----------
+        for img_path, prediction in zip(temp_paths, results.predictions):
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                st.image(Image.open(img_path), caption=prediction.base_name, use_container_width=True)
+            with col2:
+                st.markdown(f"**🩺 Diagnosis:** `{prediction.class_name}`")
+                st.markdown(f"**📊 Confidence:** `{prediction.confidence:.2f}`")
+                st.markdown(f"**🔢 Class Index:** `{prediction.class_index}`")
+            st.divider()
 
-    # Preprocess the image
-    img_tensor = transform(image).unsqueeze(0)
+    except Exception as e:
+        st.error(f"❌ Error during prediction: {e}")
 
-    # ==============================
-    # 5) Prediction
-    # ==============================
-    with torch.no_grad():
-        outputs = model(img_tensor)
-        probs = F.softmax(outputs, dim=1)
-        pred_idx = torch.argmax(probs, dim=1).item()
-        pred_label = idx_to_class[str(pred_idx)]
-        confidence = probs[0][pred_idx].item() * 100
+    # ---------- تنظيف الملفات المؤقتة ----------
+    for path in temp_paths:
+        try:
+            os.remove(path)
+        except:
+            pass
 
-    # ==============================
-    # 6) Show Results
-    # ==============================
-    st.success(f"✅ Predicted disease: **{pred_label}**")
-    st.info(f"📊 Confidence: {confidence:.2f}%")
+else:
+    st.info("⬆️ ارفع صورة علشان تبدأ التحليل.")
